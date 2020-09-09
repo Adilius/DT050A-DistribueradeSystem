@@ -12,6 +12,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.util.Map;
 
 import javax.swing.JScrollPane;
 
@@ -74,7 +75,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 		//Window close
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
-				gc.sendChatMessage("Client leave.");
+				gc.sendChatMessage(getComputerName() + " leave.");
 	            gc.shutdown();
 	        }
 	    });
@@ -82,7 +83,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 		//Window open
 		frame.addWindowListener(new java.awt.event.WindowAdapter(){
 			public void windowOpened(WindowEvent winEvt){
-				gc.sendChatMessage("Client joined.");
+				gc.sendChatMessage(getComputerName() + " joined.");
 			}
 		});
 	}
@@ -97,5 +98,16 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	@Override
 	public void onIncomingChatMessage(ChatMessage chatMessage) {	
 		txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());				
+	}
+
+	private String getComputerName()
+	{
+		Map<String, String> env = System.getenv();
+		if (env.containsKey("COMPUTERNAME"))
+			return env.get("COMPUTERNAME");
+		else if (env.containsKey("HOSTNAME"))
+			return env.get("HOSTNAME");
+		else
+			return "Unknown Computer";
 	}
 }
