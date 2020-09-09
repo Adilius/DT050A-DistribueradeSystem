@@ -6,15 +6,13 @@ import se.miun.distsys.GroupCommuncation;
 import se.miun.distsys.listeners.ChatMessageListener;
 import se.miun.distsys.messages.ChatMessage;
 
-import javax.swing.JFrame;
-import javax.swing.JButton;
-import javax.swing.JTextPane;
+import javax.swing.*;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-
-import javax.swing.JScrollPane;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 //Skeleton code for Distributed systems 9hp, DT050A
 
@@ -31,7 +29,8 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 
 	String JoinMessage = new String(" |joined the group|");
 	String LeftMessage = new String(" |left the group|");
-	String ClientsMessage = new String("|Clients|");
+	String ClientsMessage = new String(" |Clients|");
+	String ClientsDelimiter = new String("&/?"); //Divides the clients
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -57,8 +56,8 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	private void initializeFrame() {
 
 		//Set base frame
-		frame = new JFrame();
-		frame.setBounds(100, 100, 500, 600);
+		frame = new JFrame("LAN SP3AK");
+		frame.setBounds(100, 100, 700, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 
@@ -113,33 +112,54 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	public void onIncomingChatMessage(ChatMessage chatMessage) {
 		//If join message detected and is valid
 		if(chatMessage.chat.contains(JoinMessage) && !chatMessage.chat.contains(":")){
+
 			//Add to own list
 			String client = new String(chatMessage.chat.split(" ")[0]);
 			System.out.println("Client joined: " + client);
 			ClientList.add(client);
+			updateClientList();
 
-			txtpnClients.setText("");
-			for(String c : ClientList){
-				txtpnClients.setText(c + "\n" + txtpnClients.getText());
-			}
-			//Message to others about new client
-			System.out.println(ClientList);
-			String ClientListString = String.join(",", ClientList);
-			gc.sendChatMessage(ClientsMessage + ClientListString, true);
+			//Message to all clients about client list
+			String ClientListString = String.join(ClientsDelimiter, ClientList);
+			gc.sendChatMessage(ClientsMessage + " " + ClientListString, true);
 		}
 
 		//If leave message detected and is valid
 		else if(chatMessage.chat.contains(LeftMessage) && !chatMessage.chat.contains(":")){
+			//Remove client from our list
 			String client = new String(chatMessage.chat.split(" ")[0]);
 			System.out.println("Client left: " + client);
 			ClientList.remove(client);
+			updateClientList();
 
-			txtpnClients.setText("");
-			for(String c : ClientList){
-				txtpnClients.setText(c + "\n" + txtpnClients.getText());
+		//If clients message is detected and is valid
+		}else if(chatMessage.chat.contains(ClientsMessage) && !chatMessage.chat.contains(":")){
+			System.out.println("Join message recieved!");
+
+			//Scrape for clients into ArrayList
+			String RecievedClientsString[] = Pattern.compile(ClientsMessage, Pattern.LITERAL).split(chatMessage.chat);
+			RecievedClientsString = Arrays.copyOfRange(RecievedClientsString, 1, RecievedClientsString.length); //Remove overhead
+			RecievedClientsString = RecievedClientsString[0].split(Pattern.quote(ClientsDelimiter)); //Split clients into each
+			ArrayList<String> RecievedClients = new ArrayList<String>(Arrays.asList(RecievedClientsString));
+
+			//Compare if new ArrayList of clients is bigger
+			if(RecievedClients.size() > ClientList.size()){
+				ClientList = RecievedClients;
+				updateClientList();
 			}
+
+		//Else normal message
 		}else{
 			txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());
+		}
+	}
+
+	//Updates from client list array
+	public void updateClientList(){
+		txtpnClients.setText("");
+		for(String c : ClientList){
+			c.trim();	//Trim whitespaces
+			txtpnClients.setText(c + "\n" + txtpnClients.getText());
 		}
 	}
 }
