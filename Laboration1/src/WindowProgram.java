@@ -47,6 +47,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	}
 
 	private void initializeFrame() {
+
 		//Set base frame
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
@@ -76,9 +77,13 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	            gc.shutdown();
 	        }
 	    });
-	}
-	public void clientJoin(){
-		gc.sendChatMessage("Client joined.");
+
+		//Window open
+		frame.addWindowListener(new java.awt.event.WindowAdapter(){
+			public void windowOpened(WindowEvent winEvt){
+				gc.sendChatMessage("Client joined.");
+			}
+		});
 	}
 
 	@Override
