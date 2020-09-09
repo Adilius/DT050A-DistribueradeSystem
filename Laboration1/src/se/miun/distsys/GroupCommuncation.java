@@ -72,10 +72,11 @@ public class GroupCommuncation {
 	}	
 	
 	public void sendChatMessage(String chat, boolean system) {
-		if(system == false){
-			chat = getComputerName() + ": " + chat;
+		//If system message (join, leave, client list info)
+		if(system == true){
+			chat = getComputerName() + " " + chat;
 		}else{
-			chat = getComputerName() + chat;
+			chat = getComputerName() + ": " + chat;
 		}
 
  		try {

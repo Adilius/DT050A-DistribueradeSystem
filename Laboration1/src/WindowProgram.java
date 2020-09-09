@@ -31,6 +31,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 
 	String JoinMessage = new String(" |joined the group|");
 	String LeftMessage = new String(" |left the group|");
+	String ClientsMessage = new String("|Clients|");
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -57,7 +58,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 
 		//Set base frame
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 600);
+		frame.setBounds(100, 100, 500, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 
@@ -109,28 +110,36 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 
 	//Get message action
 	@Override
-	public void onIncomingChatMessage(ChatMessage chatMessage) {	
-		txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());
-
+	public void onIncomingChatMessage(ChatMessage chatMessage) {
 		//If join message detected and is valid
 		if(chatMessage.chat.contains(JoinMessage) && !chatMessage.chat.contains(":")){
+			//Add to own list
+			String client = new String(chatMessage.chat.split(" ")[0]);
+			System.out.println("Client joined: " + client);
+			ClientList.add(client);
 
-			ClientList.add(chatMessage.chat.split(" ")[0]);
-			System.out.println("Client joined: " + ClientList.get(ClientList.size() - 1));
 			txtpnClients.setText("");
-			for(String client : ClientList){
-				txtpnClients.setText(client + "\n" + txtpnClients.getText());
+			for(String c : ClientList){
+				txtpnClients.setText(c + "\n" + txtpnClients.getText());
 			}
+			//Message to others about new client
+			System.out.println(ClientList);
+			String ClientListString = String.join(",", ClientList);
+			gc.sendChatMessage(ClientsMessage + ClientListString, true);
 		}
 
 		//If leave message detected and is valid
-		if(chatMessage.chat.contains(LeftMessage) && !chatMessage.chat.contains(":")){
+		else if(chatMessage.chat.contains(LeftMessage) && !chatMessage.chat.contains(":")){
+			String client = new String(chatMessage.chat.split(" ")[0]);
+			System.out.println("Client left: " + client);
+			ClientList.remove(client);
 
-			ClientList.remove(chatMessage.chat.split(" ")[0]);
 			txtpnClients.setText("");
-			for(String client : ClientList){
-				txtpnClients.setText(client + "\n" + txtpnClients.getText());
+			for(String c : ClientList){
+				txtpnClients.setText(c + "\n" + txtpnClients.getText());
 			}
+		}else{
+			txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());
 		}
 	}
 }
