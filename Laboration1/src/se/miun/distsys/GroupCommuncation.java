@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Map;
 
 import se.miun.distsys.listeners.ChatMessageListener;
 import se.miun.distsys.messages.ChatMessage;
@@ -71,7 +72,8 @@ public class GroupCommuncation {
 	}	
 	
 	public void sendChatMessage(String chat) {
-		try {
+		chat = getComputerName() + ": " + chat;
+ 		try {
 			ChatMessage chatMessage = new ChatMessage(chat);
 			byte[] sendData = messageSerializer.serializeMessage(chatMessage);
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, 
@@ -84,6 +86,17 @@ public class GroupCommuncation {
 
 	public void setChatMessageListener(ChatMessageListener listener) {
 		this.chatMessageListener = listener;		
+	}
+
+	private String getComputerName()
+	{
+		Map<String, String> env = System.getenv();
+		if (env.containsKey("COMPUTERNAME"))
+			return env.get("COMPUTERNAME");
+		else if (env.containsKey("HOSTNAME"))
+			return env.get("HOSTNAME");
+		else
+			return "Unknown Computer";
 	}
 	
 }
