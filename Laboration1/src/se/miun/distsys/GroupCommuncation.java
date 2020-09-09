@@ -12,7 +12,7 @@ import se.miun.distsys.messages.MessageSerializer;
 
 public class GroupCommuncation {
 	
-	private int datagramSocketPort = 9999; //You need to change this!		
+	private int datagramSocketPort = 1337; //You need to change this!
 	DatagramSocket datagramSocket = null;	
 	boolean runGroupCommuncation = true;	
 	MessageSerializer messageSerializer = new MessageSerializer();

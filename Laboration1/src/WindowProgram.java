@@ -47,31 +47,40 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	}
 
 	private void initializeFrame() {
+		clientJoin();
+
+		//Set base frame
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
-		
+
+		//Set incoming text pane
 		JScrollPane scrollPane = new JScrollPane();
 		frame.getContentPane().add(scrollPane);
 		scrollPane.setViewportView(txtpnChat);
 		txtpnChat.setEditable(false);	
 		txtpnChat.setText("--== Group Chat ==--");
-		
+
+		//Set outgoing text pane
 		txtpnMessage.setText("Message");
 		frame.getContentPane().add(txtpnMessage);
-		
+
+		//Set send button
 		JButton btnSendChatMessage = new JButton("Send Chat Message");
 		btnSendChatMessage.addActionListener(this);
 		btnSendChatMessage.setActionCommand("send");
-		
 		frame.getContentPane().add(btnSendChatMessage);
-		
+
+		//Window close
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
 	            gc.shutdown();
 	        }
 	    });
+	}
+	public void clientJoin(){
+		gc.sendChatMessage("Client joined.");
 	}
 
 	@Override
