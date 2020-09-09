@@ -94,7 +94,7 @@ public class GroupCommuncation {
 		this.chatMessageListener = listener;		
 	}
 
-	private String getComputerName()
+	public String getComputerName()
 	{
 		Map<String, String> env = System.getenv();
 		if (env.containsKey("COMPUTERNAME"))

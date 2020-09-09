@@ -1,11 +1,15 @@
 import java.awt.EventQueue;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import se.miun.distsys.GroupCommuncation;
 import se.miun.distsys.listeners.ChatMessageListener;
 import se.miun.distsys.messages.ChatMessage;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -46,20 +50,28 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	}
 
 	public WindowProgram() {
+		gc = new GroupCommuncation();
+		gc.setChatMessageListener(this);
 		initializeFrame();
 
-		gc = new GroupCommuncation();		
-		gc.setChatMessageListener(this);
 		System.out.println("Group Communcation Started");
 	}
 
 	private void initializeFrame() {
 
 		//Set base frame
-		frame = new JFrame("LAN SP3AK");
+		frame = new JFrame();
+		frame.setTitle("LAN SP3AK - " + gc.getComputerName());
+		//Set icon
+		try {
+			frame.setIconImage(ImageIO.read(new File("Images/icon.png")));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		frame.setBounds(100, 100, 700, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
+
 
 		//Set incoming text pane
 		JScrollPane scrollPaneText = new JScrollPane();
