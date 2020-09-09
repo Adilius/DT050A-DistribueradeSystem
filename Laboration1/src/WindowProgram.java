@@ -74,6 +74,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 		//Window close
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
+				gc.sendChatMessage("Client leave.");
 	            gc.shutdown();
 	        }
 	    });
