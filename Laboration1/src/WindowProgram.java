@@ -47,8 +47,6 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	}
 
 	private void initializeFrame() {
-		clientJoin();
-
 		//Set base frame
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
