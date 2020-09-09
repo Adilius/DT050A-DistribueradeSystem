@@ -23,6 +23,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	JFrame frame;
 	JTextPane txtpnChat = new JTextPane();
 	JTextPane txtpnMessage = new JTextPane();
+	JTextPane txtpnClients = new JTextPane();
 	
 	GroupCommuncation gc = null;	
 
@@ -51,19 +52,18 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 
 		//Set base frame
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 450, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 
 		//Set incoming text pane
-		JScrollPane scrollPane = new JScrollPane();
-		frame.getContentPane().add(scrollPane);
-		scrollPane.setViewportView(txtpnChat);
+		JScrollPane scrollPaneText = new JScrollPane();
+		frame.getContentPane().add(scrollPaneText);
+		scrollPaneText.setViewportView(txtpnChat);
 		txtpnChat.setEditable(false);	
 		txtpnChat.setText("--== Group Chat ==--");
 
 		//Set outgoing text pane
-		txtpnMessage.setText("Message");
 		frame.getContentPane().add(txtpnMessage);
 
 		//Set send button
@@ -72,10 +72,15 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 		btnSendChatMessage.setActionCommand("send");
 		frame.getContentPane().add(btnSendChatMessage);
 
+		//Set clients text pane
+		JScrollPane scrollPaneClients = new JScrollPane();
+		frame.getContentPane().add(scrollPaneClients);
+		txtpnClients.setEditable(false);
+
 		//Window close
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
-				gc.sendChatMessage(" leaved the group.");
+				gc.sendChatMessage(" leaved the group.", true);
 	            gc.shutdown();
 	        }
 	    });
@@ -83,7 +88,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 		//Window open
 		frame.addWindowListener(new java.awt.event.WindowAdapter(){
 			public void windowOpened(WindowEvent winEvt){
-				gc.sendChatMessage(" joined the group.");
+				gc.sendChatMessage(" joined the group.", true);
 			}
 		});
 	}
@@ -91,7 +96,7 @@ public class WindowProgram implements ChatMessageListener, ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		if (event.getActionCommand().equalsIgnoreCase("send")) {
-			gc.sendChatMessage(txtpnMessage.getText());
+			gc.sendChatMessage(txtpnMessage.getText() , false);
 		}		
 	}
 	

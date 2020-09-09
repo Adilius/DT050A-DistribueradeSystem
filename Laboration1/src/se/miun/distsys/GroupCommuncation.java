@@ -71,8 +71,13 @@ public class GroupCommuncation {
 		}		
 	}	
 	
-	public void sendChatMessage(String chat) {
-		chat = getComputerName() + ": " + chat;
+	public void sendChatMessage(String chat, boolean system) {
+		if(system == false){
+			chat = getComputerName() + ": " + chat;
+		}else{
+			chat = getComputerName() + chat;
+		}
+
  		try {
 			ChatMessage chatMessage = new ChatMessage(chat);
 			byte[] sendData = messageSerializer.serializeMessage(chatMessage);

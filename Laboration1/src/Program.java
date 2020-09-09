@@ -28,7 +28,7 @@ public class Program implements ChatMessageListener{
 				
 				System.out.println("Write message to send: ");	
 				String chat = br.readLine();			
-				gc.sendChatMessage(chat);
+				gc.sendChatMessage(chat, false);
 				Thread.sleep(1000);
 			} catch (Exception e) {
 				e.printStackTrace();
