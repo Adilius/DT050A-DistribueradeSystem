@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import se.miun.distsys.GroupCommuncation;
+import se.miun.distsys.GroupCommunication;
 import se.miun.distsys.listeners.ChatMessageListener;
 import se.miun.distsys.messages.ChatMessage;
 
@@ -11,14 +11,14 @@ public class Program implements ChatMessageListener{
 
 	boolean runProgram = true;
 	
-	GroupCommuncation gc = null;	
+	GroupCommunication gc = null;
 	
 	public static void main(String[] args) {
 		Program program = new Program();
 	}
 		
 	public Program() {
-		gc = new GroupCommuncation();		
+		gc = new GroupCommunication();
 		gc.setChatMessageListener(this);
 		System.out.println("Group Communcation Started");
 		

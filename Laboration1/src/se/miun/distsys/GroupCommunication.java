@@ -5,24 +5,25 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-import se.miun.distsys.listeners.ChatMessageListener;
-import se.miun.distsys.messages.ChatMessage;
-import se.miun.distsys.messages.Message;
-import se.miun.distsys.messages.MessageSerializer;
+import se.miun.distsys.listeners.*;
+import se.miun.distsys.messages.*;
 
-public class GroupCommuncation {
+public class GroupCommunication {
 	
-	private int datagramSocketPort = 9999; //You need to change this!		
+	private int datagramSocketPort = 1337; //You need to change this!
 	DatagramSocket datagramSocket = null;	
-	boolean runGroupCommuncation = true;	
+	boolean runGroupCommunication = true;
 	MessageSerializer messageSerializer = new MessageSerializer();
 	
 	//Listeners
-	ChatMessageListener chatMessageListener = null;	
-	
-	public GroupCommuncation() {			
+	ChatMessageListener chatMessageListener = null;
+	JoinMessageListener joinMessageListener = null;
+	LeaveMessageListener leaveMessageListener = null;
+	ClientListMessageListener clientListMessageListener = null;
+
+	public GroupCommunication() {
 		try {
-			runGroupCommuncation = true;				
+			runGroupCommunication = true;
 			datagramSocket = new MulticastSocket(datagramSocketPort);
 						
 			ReceiveThread rt = new ReceiveThread();
@@ -34,7 +35,7 @@ public class GroupCommuncation {
 	}
 
 	public void shutdown() {
-		runGroupCommuncation = false;		
+		runGroupCommunication = false;
 	}
 	
 
@@ -45,7 +46,7 @@ public class GroupCommuncation {
 			byte[] buffer = new byte[65536];		
 			DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
 			
-			while(runGroupCommuncation) {
+			while(runGroupCommunication) {
 				try {
 					datagramSocket.receive(datagramPacket);										
 					byte[] packetData = datagramPacket.getData();					
@@ -56,16 +57,37 @@ public class GroupCommuncation {
 				}
 			}
 		}
-				
+
+		//Handles incoming message into correct message type
 		private void handleMessage (Message message) {
-			
+
+			//Chat message
 			if(message instanceof ChatMessage) {				
 				ChatMessage chatMessage = (ChatMessage) message;				
 				if(chatMessageListener != null){
 					chatMessageListener.onIncomingChatMessage(chatMessage);
 				}
-			} else {				
-				System.out.println("Unknown message type");
+			//Join message
+			}else if(message instanceof JoinMessage) {
+				JoinMessage joinMessage = (JoinMessage) message;
+				if(joinMessageListener != null){
+					joinMessageListener.onIncomingJoinMessage(joinMessage);
+				}
+			//Leave message
+			}else if(message instanceof LeaveMessage) {
+				LeaveMessage leaveMessage = (LeaveMessage) message;
+				if(leaveMessageListener != null){
+					leaveMessageListener.onIncomingLeaveMessage(leaveMessage);
+				}
+			//Client list message
+			}else if(message instanceof ClientListMessage){
+				ClientListMessage clientListMessage = (ClientListMessage) message;
+				if(clientListMessageListener != null){
+					clientListMessageListener.onIncomingLeaveMessage(clientListMessage);
+				}
+			//Unknown message type
+			}else {
+				System.out.println("Received unknown message type.");
 			}			
 		}		
 	}	
