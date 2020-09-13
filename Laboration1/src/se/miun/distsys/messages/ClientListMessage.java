@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ClientListMessage extends Message {
 
-    public List<String> clients = new ArrayList<>();
+    public List<String> clientList = new ArrayList<>();
 
-    public ClientListMessage(List<String> clients){ this.clients = clients; }
+    public ClientListMessage(List<String> clientList){ this.clientList = clientList; }
 }

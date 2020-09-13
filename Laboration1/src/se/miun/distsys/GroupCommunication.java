@@ -4,13 +4,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.List;
 
 import se.miun.distsys.listeners.*;
 import se.miun.distsys.messages.*;
 
 public class GroupCommunication {
 	
-	private int datagramSocketPort = 1337; //You need to change this!
+	private int datagramSocketPort = 1337;
 	DatagramSocket datagramSocket = null;	
 	boolean runGroupCommunication = true;
 	MessageSerializer messageSerializer = new MessageSerializer();
@@ -34,8 +35,14 @@ public class GroupCommunication {
 		}
 	}
 
-	public void shutdown() {
+	public void shutdown(String username) {
+		sendLeaveMessage(username);
 		runGroupCommunication = false;
+	}
+
+	public void start(String username) {
+		runGroupCommunication = true;
+		sendJoinMessage(username);
 	}
 	
 
@@ -83,7 +90,7 @@ public class GroupCommunication {
 			}else if(message instanceof ClientListMessage){
 				ClientListMessage clientListMessage = (ClientListMessage) message;
 				if(clientListMessageListener != null){
-					clientListMessageListener.onIncomingLeaveMessage(clientListMessage);
+					clientListMessageListener.onIncomingClientListMessage(clientListMessage);
 				}
 			//Unknown message type
 			}else {
@@ -104,8 +111,56 @@ public class GroupCommunication {
 		}		
 	}
 
+	public void sendJoinMessage(String username) {
+		try {
+			JoinMessage joinMessage = new JoinMessage(username);
+			byte[] sendData = messageSerializer.serializeMessage(joinMessage);
+			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
+					InetAddress.getByName("255.255.255.255"), datagramSocketPort);
+			datagramSocket.send(sendPacket);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void sendLeaveMessage(String username) {
+		try {
+			LeaveMessage leaveMessage = new LeaveMessage(username);
+			byte[] sendData = messageSerializer.serializeMessage(leaveMessage);
+			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
+					InetAddress.getByName("255.255.255.255"), datagramSocketPort);
+			datagramSocket.send(sendPacket);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void sendClientListMessage(List<String> clientList) {
+		try {
+			ClientListMessage clientListMessage = new ClientListMessage(clientList);
+			byte[] sendData = messageSerializer.serializeMessage(clientListMessage);
+			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
+					InetAddress.getByName("255.255.255.255"), datagramSocketPort);
+			datagramSocket.send(sendPacket);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void setChatMessageListener(ChatMessageListener listener) {
-		this.chatMessageListener = listener;		
+		this.chatMessageListener = listener;
+	}
+
+	public void setJoinMessageListener(JoinMessageListener listener) {
+		this.joinMessageListener = listener;
+	}
+
+	public void setLeaveMessageListener(LeaveMessageListener listener) {
+		this.leaveMessageListener = listener;
+	}
+
+	public void setClientListMessageListener(ClientListMessageListener listener) {
+		this.clientListMessageListener = listener;
 	}
 	
 }

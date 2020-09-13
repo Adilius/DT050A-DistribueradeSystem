@@ -21,6 +21,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -33,11 +35,13 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
     JFrame frame;
 	JTextPane txtpnChat = new JTextPane();
 	JTextPane txtpnMessage = new JTextPane();
-	JTextPane txtpnClients = new JTextPane();
+	JTextPane txtpnClientList = new JTextPane();
 	
 	GroupCommunication gc;
 
     public static String username = "Unknown";
+
+    List<String> clientList = new ArrayList<>();
 
 	public static void main(String[] args) {
 	    username = getUsername();
@@ -58,6 +62,9 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 
 		gc = new GroupCommunication();
 		gc.setChatMessageListener(this);
+		gc.setJoinMessageListener(this);
+		gc.setLeaveMessageListener(this);
+		gc.setClientListMessageListener(this);
 		System.out.println("Group Communcation Started");
 	}
 
@@ -95,21 +102,29 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Set clients text pane
 		JScrollPane scrollPaneClients = new JScrollPane();
 		frame.getContentPane().add(scrollPaneClients);
-		scrollPaneClients.setViewportView(txtpnClients);
-		txtpnClients.setEditable(false);
+		scrollPaneClients.setViewportView(txtpnClientList);
+		txtpnClientList.setEditable(false);
 
-		//Window listeners
+		//Program shutdown
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
-	            gc.shutdown();
+	            gc.shutdown(username);
 	        }
 	    });
+
+		//Program start
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+			public void windowOpened(WindowEvent winEvt){
+				gc.start(username);
+			}
+		});
 	}
 
+	//Get unique username for this client
 	public static String getUsername() {
 		//Create random ID for client
 		Random rand = new Random();
-		int randID = rand.nextInt(1000);
+		int randID = rand.nextInt(10000);
 
 		//Get computer name if possible
 		Map<String, String> env = System.getenv();
@@ -117,15 +132,18 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		if (env.containsKey("COMPUTERNAME")){
 			computerName = env.get("COMPUTERNAME");
 		}
-		else if (env.containsKey("HOSTNAME")){
-			computerName = env.get("HOSTNAME");
-		}
-		else {
-			computerName = "Unknown";
-		}
+		else computerName = env.getOrDefault("HOSTNAME", "Unknown");
 
 		//Return username
 		return (computerName + "_" + randID);
+	}
+
+	//Updates from client list array
+	public void updateClientList(){
+		txtpnClientList.setText("");
+		for(String c : clientList){
+			txtpnClientList.setText(c + "\n" + txtpnClientList.getText());
+		}
 	}
 
 	@Override
@@ -142,16 +160,34 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 
 	@Override
 	public void onIncomingJoinMessage(JoinMessage joinMessage) {
-
+		//If we already have this user
+		if(clientList.contains(joinMessage.username)){
+			System.out.println("Duplicate join message.");
+		//Else add it, update list, send back client list
+		}else{
+			clientList.add(joinMessage.username);
+			updateClientList();
+			gc.sendClientListMessage(clientList);
+		}
 	}
 
 	@Override
 	public void onIncomingLeaveMessage(LeaveMessage leaveMessage) {
-
+		//If we have this user on our list
+		if(clientList.contains(leaveMessage.username)){
+			clientList.remove(leaveMessage.username);
+			updateClientList();
+		}else{
+			System.out.println("Unknown leave message. ");
+		}
 	}
 
 	@Override
-	public void onIncomingLeaveMessage(ClientListMessage clientListMessage) {
-
+	public void onIncomingClientListMessage(ClientListMessage clientListMessage) {
+		//If new incoming list has more users than ours
+		if(clientList.size() < clientListMessage.clientList.size()){
+			clientList = clientListMessage.clientList;
+			updateClientList();
+		}
 	}
 }
