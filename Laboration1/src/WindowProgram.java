@@ -29,6 +29,7 @@ import java.util.Random;
 import javax.swing.JScrollPane;
 
 //Skeleton code for Distributed systems 9hp, DT050A
+//Adil Aboulkacim (adab1600)
 
 public class WindowProgram implements ChatMessageListener, JoinMessageListener, LeaveMessageListener, ClientListMessageListener, ActionListener {
 
@@ -72,7 +73,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 
 		//Set base frame
 		frame = new JFrame();
-		frame.setTitle("LAN SP34K: " + username);
+		frame.setTitle("LAN SPEAK: " + username);
 		try {
 			frame.setIconImage(ImageIO.read(new File("images/icon.png")));
 		} catch(IOException e) {
@@ -108,6 +109,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program shutdown
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
+	        	gc.sendChatMessage(username + " has left.");
 	            gc.shutdown(username);
 	        }
 	    });
@@ -115,6 +117,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program start
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowOpened(WindowEvent winEvt){
+				gc.sendChatMessage(username + " has joined.");
 				gc.start(username);
 			}
 		});
