@@ -152,7 +152,8 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		if (event.getActionCommand().equalsIgnoreCase("send")) {
-			gc.sendChatMessage(txtpnMessage.getText());
+			gc.sendChatMessage(username + ": " +  txtpnMessage.getText());
+			txtpnMessage.setText("");
 		}		
 	}
 	
