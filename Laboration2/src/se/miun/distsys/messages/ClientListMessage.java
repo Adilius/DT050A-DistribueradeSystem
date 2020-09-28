@@ -1,11 +1,13 @@
 package se.miun.distsys.messages;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClientListMessage extends Message {
 
-    public List<String> clientList = new ArrayList<>();
+    public Map<String, Integer> clientList = new HashMap<String, Integer>();
 
-    public ClientListMessage(List<String> clientList){ this.clientList = clientList; }
+    public ClientListMessage(Map<String, Integer> clientList){ this.clientList = clientList; }
 }

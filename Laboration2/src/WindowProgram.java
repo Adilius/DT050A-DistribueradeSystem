@@ -21,10 +21,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
+import java.util.TreeMap;
+import java.util.AbstractMap;
 
 import javax.swing.JScrollPane;
 
@@ -37,12 +38,12 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	JTextPane txtpnChat = new JTextPane();
 	JTextPane txtpnMessage = new JTextPane();
 	JTextPane txtpnClientList = new JTextPane();
-	
-	GroupCommunication gc;
+
+    GroupCommunication gc;
 
     public static String username = "Unknown";
 
-    List<String> clientList = new ArrayList<>();
+    Map<String, Integer> clientList = new HashMap<String, Integer>();
 
 	public static void main(String[] args) {
 	    username = getUsername();
@@ -144,32 +145,35 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	//Updates from client list array
 	public void updateClientList(){
 		txtpnClientList.setText("");
-		for(String c : clientList){
-			txtpnClientList.setText(c + "\n" + txtpnClientList.getText());
+		for(Map.Entry<String, Integer> entry : clientList.entrySet()){
+			txtpnClientList.setText(entry.getKey() + ": " + entry.getValue() + "\n" + txtpnClientList.getText());
+
 		}
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		if (event.getActionCommand().equalsIgnoreCase("send")) {
+		    clientList.put(username, clientList.get(username) +1);
 			gc.sendChatMessage(username + ": " +  txtpnMessage.getText());
+			updateClientList();
 			txtpnMessage.setText("");
 		}		
 	}
 	
 	@Override
 	public void onIncomingChatMessage(ChatMessage chatMessage) {	
-		txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());				
+		txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());   			
 	}
 
 	@Override
 	public void onIncomingJoinMessage(JoinMessage joinMessage) {
 		//If we already have this user
-		if(clientList.contains(joinMessage.username)){
+		if(clientList.containsKey(joinMessage.username)){
 			System.out.println("Duplicate join message.");
 		//Else add it, update list, send back client list
 		}else{
-			clientList.add(joinMessage.username);
+			clientList.put(joinMessage.username, 0);
 			updateClientList();
 			gc.sendClientListMessage(clientList);
 		}
@@ -178,7 +182,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	@Override
 	public void onIncomingLeaveMessage(LeaveMessage leaveMessage) {
 		//If we have this user on our list
-		if(clientList.contains(leaveMessage.username)){
+		if(clientList.containsKey(leaveMessage.username)){
 			clientList.remove(leaveMessage.username);
 			updateClientList();
 		}else{

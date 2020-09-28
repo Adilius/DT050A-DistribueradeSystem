@@ -5,6 +5,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.List;
+import java.util.Map;
 
 import se.miun.distsys.listeners.*;
 import se.miun.distsys.messages.*;
@@ -135,7 +136,7 @@ public class GroupCommunication {
 		}
 	}
 
-	public void sendClientListMessage(List<String> clientList) {
+	public void sendClientListMessage(Map<String, Integer> clientList) {
 		try {
 			ClientListMessage clientListMessage = new ClientListMessage(clientList);
 			byte[] sendData = messageSerializer.serializeMessage(clientListMessage);
