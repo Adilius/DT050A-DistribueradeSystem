@@ -88,8 +88,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		JScrollPane scrollPane = new JScrollPane();
 		frame.getContentPane().add(scrollPane);
 		scrollPane.setViewportView(txtpnChat);
-		txtpnChat.setEditable(false);	
-		txtpnChat.setText("---- Group Chat ----");
+		txtpnChat.setEditable(false);
 
 		//Set outgoing text pane
 		txtpnMessage.setText("");
@@ -110,7 +109,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program shutdown
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
-	        	gc.sendChatMessage(username + " has left.");
+	        	gc.sendChatMessage(username, " has left.");
 	            gc.shutdown(username);
 	        }
 	    });
@@ -118,7 +117,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program start
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowOpened(WindowEvent winEvt){
-				gc.sendChatMessage(username + " has joined.");
+				gc.sendChatMessage(username, " has joined.");
 				gc.start(username);
 			}
 		});
@@ -145,17 +144,19 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	//Updates from client list array
 	public void updateClientList(){
 		txtpnClientList.setText("");
+
 		for(Map.Entry<String, Integer> entry : clientList.entrySet()){
 			txtpnClientList.setText(entry.getKey() + ": " + entry.getValue() + "\n" + txtpnClientList.getText());
 
 		}
+		txtpnClientList.setText("---- Client list ----" + "\n" + txtpnClientList.getText());
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		if (event.getActionCommand().equalsIgnoreCase("send")) {
 		    clientList.put(username, clientList.get(username) +1);
-			gc.sendChatMessage(username + ": " +  txtpnMessage.getText());
+			gc.sendChatMessage(username ,  txtpnMessage.getText());
 			updateClientList();
 			txtpnMessage.setText("");
 		}		
@@ -163,7 +164,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	
 	@Override
 	public void onIncomingChatMessage(ChatMessage chatMessage) {	
-		txtpnChat.setText(chatMessage.chat + "\n" + txtpnChat.getText());   			
+		txtpnChat.setText(chatMessage.username + ":" + chatMessage.chat + "\n" + txtpnChat.getText());
 	}
 
 	@Override
