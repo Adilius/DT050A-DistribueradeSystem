@@ -42,8 +42,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
     GroupCommunication gc;
 
     public static String username = "Unknown";
-
-    Map<String, Integer> clientList = new HashMap<String, Integer>();
+    public static Map<String, Integer> clientList = new HashMap<String, Integer>();
 
 	public static void main(String[] args) {
 	    username = getUsername();
@@ -109,7 +108,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program shutdown
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
-	        	gc.sendChatMessage(username, " has left.");
+	        	gc.sendChatMessage(username, " has left.", clientList);
 	            gc.shutdown(username);
 	        }
 	    });
@@ -117,7 +116,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program start
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowOpened(WindowEvent winEvt){
-				gc.sendChatMessage(username, " has joined.");
+				gc.sendChatMessage(username, " has joined.", clientList);
 				gc.start(username);
 			}
 		});
@@ -156,7 +155,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	public void actionPerformed(ActionEvent event) {
 		if (event.getActionCommand().equalsIgnoreCase("send")) {
 		    clientList.put(username, clientList.get(username) +1);
-			gc.sendChatMessage(username ,  txtpnMessage.getText());
+			gc.sendChatMessage(username ,  txtpnMessage.getText(), clientList);
 			updateClientList();
 			txtpnMessage.setText("");
 		}		
@@ -164,7 +163,9 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	
 	@Override
 	public void onIncomingChatMessage(ChatMessage chatMessage) {	
-		txtpnChat.setText(chatMessage.username + ":" + chatMessage.chat + "\n" + txtpnChat.getText());
+		txtpnChat.setText(
+				chatMessage.username + ":" + chatMessage.chat + " " + chatMessage.clientList + "\n"
+				+ txtpnChat.getText());
 	}
 
 	@Override

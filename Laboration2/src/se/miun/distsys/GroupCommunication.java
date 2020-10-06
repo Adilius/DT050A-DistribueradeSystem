@@ -100,9 +100,9 @@ public class GroupCommunication {
 		}		
 	}	
 	
-	public void sendChatMessage(String username, String chat) {
+	public void sendChatMessage(String username, String chat, Map<String, Integer> clientList) {
 		try {
-			ChatMessage chatMessage = new ChatMessage(username, chat);
+			ChatMessage chatMessage = new ChatMessage(username, chat, clientList);
 			byte[] sendData = messageSerializer.serializeMessage(chatMessage);
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, 
 					InetAddress.getByName("255.255.255.255"), datagramSocketPort);
