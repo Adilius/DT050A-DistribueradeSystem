@@ -19,10 +19,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.AbstractMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
 //Skeleton code for Distributed systems 9hp, DT050A
@@ -34,12 +32,13 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	JTextPane txtpnChat = new JTextPane();
 	JTextPane txtpnMessage = new JTextPane();
 	JTextPane txtpnClientList = new JTextPane();
-	JPanel pnlVector = new JPanel(new BorderLayout());
+	JTextPane txtpnCurrentClient = new JTextPane();
+	public static Integer selectedClient = 0;
 
     GroupCommunication gc;
 
     public static String username = "Unknown";
-    public static Map<String, Integer> clientList = new HashMap<String, Integer>();
+    public static LinkedHashMap<String, Integer> clientList = new LinkedHashMap<String, Integer>();
 
 	public static void main(String[] args) {
 	    username = getUsername();
@@ -76,7 +75,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
-		frame.setBounds(100, 100, 700, 600);
+		frame.setBounds(100, 100, 700, 900);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 
@@ -103,11 +102,29 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		txtpnClientList.setEditable(false);
 
 		//Set text and buttons for vector clock manipulation
-		JLabel currentClient = new JLabel("0");
+		frame.getContentPane().add(txtpnCurrentClient);
+		txtpnCurrentClient.setText("0");
+		txtpnCurrentClient.setEditable(false);
+
 		JButton selectUp = new JButton("↑");
+		selectUp.addActionListener(this);
+		selectUp.setActionCommand("selectUp");
+		frame.getContentPane().add(selectUp);
+
 		JButton selectDown = new JButton("↓");
+		selectDown.addActionListener(this);
+		selectDown.setActionCommand("selectDown");
+		frame.getContentPane().add(selectDown);
+
 		JButton clockIncrement = new JButton("+");
+		clockIncrement.addActionListener(this);
+		clockIncrement.setActionCommand("clockIncrement");
+		frame.getContentPane().add(clockIncrement);
+
 		JButton clockDecrement = new JButton("-");
+		clockDecrement.addActionListener(this);
+		clockDecrement.setActionCommand("clockDecrement");
+		frame.getContentPane().add(clockDecrement);
 
 
 		//Program shutdown
@@ -160,12 +177,26 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	public void updateClientList(){
 		txtpnClientList.setText("");
 
+		Integer counter = 0;
 		for(Map.Entry<String, Integer> entry : clientList.entrySet()){
-			txtpnClientList.setText(entry.getKey() + ": " + entry.getValue() + "\n" + txtpnClientList.getText());
-
+			txtpnClientList.setText(counter + ". " + entry.getKey() + ": " + entry.getValue() + "\n" + txtpnClientList.getText());
+			counter++;
 		}
 		txtpnClientList.setText("---- Client list ----" + "\n" + txtpnClientList.getText());
 	}
+
+	//Reset selected client
+	public void resetSelectedClient(){
+		selectedClient = 0;
+		updateSelectedClient();
+	}
+
+	//Updates selected client
+	public void updateSelectedClient(){
+		txtpnCurrentClient.setText(selectedClient.toString());
+	}
+
+
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
@@ -174,7 +205,53 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 			gc.sendChatMessage(username ,  txtpnMessage.getText(), clientList);
 			updateClientList();
 			txtpnMessage.setText("");
-		}		
+		}
+
+		if (event.getActionCommand().equalsIgnoreCase("selectUp")){
+			if(selectedClient<clientList.size()-1){
+				selectedClient++;
+			}
+			updateSelectedClient();
+		}
+
+		if (event.getActionCommand().equalsIgnoreCase("selectDown")){
+			if(selectedClient != 0) {
+				selectedClient--;
+			}
+			updateSelectedClient();
+		}
+
+		if(event.getActionCommand().equalsIgnoreCase("clockIncrement")){
+			Integer counter = 0;
+			for(Map.Entry<String, Integer> entry : clientList.entrySet()){
+				if(counter == selectedClient){
+					String selectedKey = entry.getKey();
+					Integer selectedValue = entry.getValue();
+					selectedValue++;
+					clientList.put(selectedKey, selectedValue);
+					updateClientList();
+					break;
+				}else{
+					counter++;
+				}
+			}
+		}
+
+		if(event.getActionCommand().equalsIgnoreCase("clockDecrement")){
+			Integer counter = 0;
+			for(Map.Entry<String, Integer> entry : clientList.entrySet()){
+				if(counter == selectedClient){
+					String selectedKey = entry.getKey();
+					Integer selectedValue = entry.getValue();
+					selectedValue--;
+					clientList.put(selectedKey, selectedValue);
+					updateClientList();
+					break;
+				}else{
+					counter++;
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -193,8 +270,9 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 			//If we are only behind one message or the same, then we good
 			if(localSum == receivedSum || localSum + 1 == receivedSum){
 				txtpnChat.setText(
-						chatMessage.username + ":" + chatMessage.chat + " " + chatMessage.clientList + "\n"
-								+ txtpnChat.getText());
+						chatMessage.username + ":" + chatMessage.chat + " "
+								//+ chatMessage.clientList
+								+ "\n" + txtpnChat.getText());
 				clientList = chatMessage.clientList;	//Adopt new client list vector clock
 				updateClientList();
 			}else{
@@ -228,6 +306,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		if(clientList.containsKey(leaveMessage.username)){
 			clientList.remove(leaveMessage.username);
 			updateClientList();
+			resetSelectedClient();
 		}else{
 			System.out.println("Unknown leave message. ");
 		}

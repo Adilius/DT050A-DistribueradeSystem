@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -100,7 +101,7 @@ public class GroupCommunication {
 		}		
 	}	
 	
-	public void sendChatMessage(String username, String chat, Map<String, Integer> clientList) {
+	public void sendChatMessage(String username, String chat, LinkedHashMap<String, Integer> clientList) {
 		try {
 			ChatMessage chatMessage = new ChatMessage(username, chat, clientList);
 			byte[] sendData = messageSerializer.serializeMessage(chatMessage);
@@ -136,7 +137,7 @@ public class GroupCommunication {
 		}
 	}
 
-	public void sendClientListMessage(Map<String, Integer> clientList) {
+	public void sendClientListMessage(LinkedHashMap<String, Integer> clientList) {
 		try {
 			ClientListMessage clientListMessage = new ClientListMessage(clientList);
 			byte[] sendData = messageSerializer.serializeMessage(clientListMessage);
