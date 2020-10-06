@@ -1,7 +1,7 @@
-import java.awt.EventQueue;
+import java.awt.*;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import se.miun.distsys.GroupCommunication;
 import se.miun.distsys.listeners.ChatMessageListener;
@@ -13,9 +13,6 @@ import se.miun.distsys.messages.ClientListMessage;
 import se.miun.distsys.messages.JoinMessage;
 import se.miun.distsys.messages.LeaveMessage;
 
-import javax.swing.JButton;
-import javax.swing.JTextPane;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -26,8 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.AbstractMap;
-
-import javax.swing.JScrollPane;
+import java.util.concurrent.TimeUnit;
 
 //Skeleton code for Distributed systems 9hp, DT050A
 //Adil Aboulkacim (adab1600)
@@ -38,6 +34,7 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	JTextPane txtpnChat = new JTextPane();
 	JTextPane txtpnMessage = new JTextPane();
 	JTextPane txtpnClientList = new JTextPane();
+	JPanel pnlVector = new JPanel(new BorderLayout());
 
     GroupCommunication gc;
 
@@ -105,6 +102,14 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		scrollPaneClients.setViewportView(txtpnClientList);
 		txtpnClientList.setEditable(false);
 
+		//Set text and buttons for vector clock manipulation
+		JLabel currentClient = new JLabel("0");
+		JButton selectUp = new JButton("↑");
+		JButton selectDown = new JButton("↓");
+		JButton clockIncrement = new JButton("+");
+		JButton clockDecrement = new JButton("-");
+
+
 		//Program shutdown
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 	        public void windowClosing(WindowEvent winEvt) {
@@ -116,8 +121,19 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 		//Program start
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowOpened(WindowEvent winEvt){
-				gc.sendChatMessage(username, " has joined.", clientList);
+				//Send initial messages to register on network and get clients
 				gc.start(username);
+
+				//Wait for client list to catch up
+				while(clientList.size()<1){
+					try {
+						TimeUnit.SECONDS.sleep(1);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				System.out.println("hello");
+				gc.sendChatMessage(username, " has joined.", clientList);
 			}
 		});
 	}
@@ -162,10 +178,35 @@ public class WindowProgram implements ChatMessageListener, JoinMessageListener, 
 	}
 	
 	@Override
-	public void onIncomingChatMessage(ChatMessage chatMessage) {	
-		txtpnChat.setText(
-				chatMessage.username + ":" + chatMessage.chat + " " + chatMessage.clientList + "\n"
-				+ txtpnChat.getText());
+	public void onIncomingChatMessage(ChatMessage chatMessage) {
+		//Now we check that the client list is correct size
+		if(clientList.size() == chatMessage.clientList.size()){
+
+			//Check if our client list is only 1 behind the received client list vector
+			Integer localSum = 0;
+			for(Integer value : clientList.values()){ localSum += value;}
+			Integer receivedSum = 0;
+			for(Integer value : chatMessage.clientList.values()){ receivedSum += value; }
+			System.out.println("Local sum: " + localSum);
+			System.out.println("Received sum: " + receivedSum);
+
+			//If we are only behind one message or the same, then we good
+			if(localSum == receivedSum || localSum + 1 == receivedSum){
+				txtpnChat.setText(
+						chatMessage.username + ":" + chatMessage.chat + " " + chatMessage.clientList + "\n"
+								+ txtpnChat.getText());
+				clientList = chatMessage.clientList;	//Adopt new client list vector clock
+				updateClientList();
+			}else{
+				System.out.println("Client list vector clock sum error");
+			}
+
+
+
+		}else{
+			System.out.println("Error: Client list mismatch. Received: " + chatMessage.clientList.size() + " Local: " + clientList.size());
+			txtpnChat.setText("Error: Client list mismatch" + "\n" + txtpnChat.getText());
+		}
 	}
 
 	@Override
